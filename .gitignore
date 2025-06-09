@@ -1,4 +1,8 @@
 Dockerfile
+Dockerfile.dev
+scripts.sql
+.air.toml
+tmp/
 compose.yaml
 go.mod
 go.sum
