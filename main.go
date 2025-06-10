@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func main() {
+func ConnectToDB() *sql.DB {
 
 	connStr := os.Getenv("DATABASE_URL")
 
@@ -20,35 +20,88 @@ func main() {
 	}
 
 	db, err := sql.Open("postgres", connStr)
+
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
 
-	if err = db.Ping(); err != nil {
+	if err := db.Ping(); err != nil {
+		db.Close()
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+
 	fmt.Println("connected to database successfully")
 
+	return db
+}
+
+func AddCategories(db *sql.DB) error {
 	resp, err := http.Get("https://dummyjson.com/products/category-list")
 
 	if err != nil {
-		fmt.Println("Failed to fetch data:", err)
+		return fmt.Errorf("Failed to fetch data: %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	var categories []string
 
-	json.NewDecoder(resp.Body).Decode(&categories)
+	if err := json.NewDecoder(resp.Body).Decode(&categories); err != nil {
+		return fmt.Errorf("Error decoding JSON: %w", err)
+	}
 
 	for _, name := range categories {
 		sqlStatement := `INSERT INTO categories(category_name) VALUES ($1)`
 		_, err = db.Exec(sqlStatement, name)
 		if err != nil {
-			fmt.Println("Error inserting data", err)
+			fmt.Printf("Error inserting data %q: %v\n", name, err)
 		}
 	}
 
+	return nil
+}
+
+type ProductsResponse struct {
+	Products []Product `json:"products"`
+}
+
+type Product struct {
+	Title    string `json:"title"`
+	Category string `json:"category"`
+	Stock    int    `json:"stock"`
+}
+
+func AddProducts(db *sql.DB) error {
+	resp, err := http.Get("https://dummyjson.com/products?limit=0")
+
+	if err != nil {
+		return fmt.Errorf("Failed to fetch data: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	var products ProductsResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&products); err != nil {
+		return fmt.Errorf("Error decoding JSON: %w", err)
+	}
+
+	fmt.Println("Products: ", products.Products)
+
+	return nil
+}
+
+func main() {
+	db := ConnectToDB()
+	defer db.Close()
+
+	// if err := AddCategories(db); err != nil {
+	// 	log.Fatalf("Failed to add categories: %v", err)
+	// }
+
+	if err := AddProducts(db); err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")
