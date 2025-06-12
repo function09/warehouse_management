@@ -86,8 +86,13 @@ func AddProducts(db *sql.DB) error {
 		return fmt.Errorf("Error decoding JSON: %w", err)
 	}
 
-	fmt.Println("Products: ", products.Products)
-
+	for _, p := range products.Products {
+		sqlStatement := "INSERT INTO products (product_name, stock, category_id) VALUES($1, $2, (SELECT category_id FROM categories WHERE category_name = $3))"
+		_, err := db.Exec(sqlStatement, p.Title, p.Stock, p.Category)
+		if err != nil {
+			return fmt.Errorf("Error inserting data: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -95,13 +100,14 @@ func main() {
 	db := ConnectToDB()
 	defer db.Close()
 
-	// if err := AddCategories(db); err != nil {
-	// 	log.Fatalf("Failed to add categories: %v", err)
-	// }
+	if err := AddCategories(db); err != nil {
+		log.Fatalf("Failed to add categories: %v", err)
+	}
 
 	if err := AddProducts(db); err != nil {
-		log.Fatalf("Failed to parse JSON: %v", err)
+		log.Fatalf("Failed to add products: %v", err)
 	}
+
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")
