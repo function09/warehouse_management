@@ -100,14 +100,14 @@ func main() {
 	db := ConnectToDB()
 	defer db.Close()
 
-	if err := AddCategories(db); err != nil {
-		log.Fatalf("Failed to add categories: %v", err)
-	}
-
-	if err := AddProducts(db); err != nil {
-		log.Fatalf("Failed to add products: %v", err)
-	}
-
+	// if err := AddCategories(db); err != nil {
+	// 	log.Fatalf("Failed to add categories: %v", err)
+	// }
+	//
+	// if err := AddProducts(db); err != nil {
+	// 	log.Fatalf("Failed to add products: %v", err)
+	// }
+	//
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")

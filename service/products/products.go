@@ -1,4 +1,4 @@
-package productsservice
+package service
 
 import (
 	domain "github.com/function09/warehouse_management/domain/products"
@@ -13,5 +13,9 @@ func NewService(repo domain.Repository) *Service {
 }
 
 func (s *Service) GetProductByID(id int) (*domain.Product, error) {
-	return s.repo.GetByID(id)
+	return s.repo.GetProductByID(id)
+}
+
+func (s *Service) GetProductByName(n string) (*domain.Product, error) {
+	return s.repo.GetProductByName(n)
 }
