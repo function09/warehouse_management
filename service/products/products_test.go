@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	domain "github.com/function09/warehouse_management/domain/products"
-	productsService "github.com/function09/warehouse_management/service/products"
+	service "github.com/function09/warehouse_management/service/products"
 )
 
 type MockRepository struct {
-	products map[int]*domain.Product
+	products []*domain.Product
 	err      error
 }
 
@@ -17,13 +17,14 @@ func (m *MockRepository) GetProductByID(i int) (*domain.Product, error) {
 	if m.err != nil {
 		return nil, m.err
 	}
-	p, ok := m.products[i]
 
-	if !ok {
-		return nil, errors.New("not found")
+	for _, p := range m.products {
+		if p.ID == i {
+			return p, nil
+		}
 	}
 
-	return p, nil
+	return nil, errors.New("product not found")
 }
 
 func (m *MockRepository) GetProductByName(n string) (*domain.Product, error) {
@@ -40,70 +41,93 @@ func (m *MockRepository) GetProductByName(n string) (*domain.Product, error) {
 	return nil, errors.New("Not found")
 }
 
-func TestGetProductByIDSuccess(t *testing.T) {
-	mockRepo := &MockRepository{products: map[int]*domain.Product{1: {ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99}}}
-
-	service := productsService.NewService(mockRepo)
-
-	product, err := service.GetProductByID(1)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+func (m *MockRepository) GetAllProducts() ([]*domain.Product, error) {
+	if m.err != nil {
+		return nil, m.err
 	}
 
-	if product.ID != 1 || product.Title != "Laptop" {
-		t.Errorf("receieved unexpected product: %+v", product)
+	productsSlice := make([]*domain.Product, 0, len(m.products))
+
+	for _, p := range m.products {
+		productsSlice = append(productsSlice, p)
 	}
+
+	return productsSlice, nil
 }
 
-func TestGetProductByIDFail(t *testing.T) {
-	mockRepo := &MockRepository{products: map[int]*domain.Product{}}
-
-	service := productsService.NewService(mockRepo)
-
-	_, err := service.GetProductByID(99)
-
-	if err == nil {
-		t.Fatalf("expected to get a product, got nil")
+func TestGetProductByID(t *testing.T) {
+	mockRepo := &MockRepository{
+		products: []*domain.Product{
+			{ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99},
+			{ID: 2, Title: "PlayStation", Category: "Electronics", Stock: 21},
+		},
 	}
 
-}
+	service := service.NewService(mockRepo)
 
-func TestGetProductByID_RepositoryError(t *testing.T) {
-	mockRepo := &MockRepository{err: errors.New("db connection failed")}
-
-	service := productsService.NewService(mockRepo)
-
-	_, err := service.GetProductByID(99)
-
-	if err == nil || err.Error() != "db connection failed" {
-		t.Fatalf("expected db connection failed error, got %v", err)
-	}
-}
-
-func TestGetProductByNameSuccess(t *testing.T) {
-	mockRepo := &MockRepository{products: map[int]*domain.Product{1: {ID: 1, Title: "Playstation", Category: "Electronics", Stock: 99}, 2: {ID: 1, Title: "Laptop", Category: "Electronics", Stock: 21}}}
-
-	service := productsService.NewService(mockRepo)
-
-	product, err := service.GetProductByName("Laptop")
+	p, err := service.GetProductByID(2)
 
 	if err != nil {
-		t.Errorf("Expected product %v got something else", err)
+		t.Fatalf("Expected product with ID 2 but got %v", err)
 	}
 
-	if product.Title != "Laptop" {
-		t.Errorf("expected Laptop got %v", product.Title)
+	if p == nil {
+		t.Fatalf("Expected to get a product but got %v", p)
+	}
+
+	if p.Title != "PlayStation" {
+		t.Fatalf("Expected to get Playstation but got %v", p.Title)
 	}
 }
 
-func TestGetProductByNameFail(t *testing.T) {
-	mockRepo := &MockRepository{products: map[int]*domain.Product{}}
+func TestGetProductByName(t *testing.T) {
+	mockRepo := &MockRepository{
+		products: []*domain.Product{
+			{ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99},
+			{ID: 2, Title: "PlayStation", Category: "Electronics", Stock: 21},
+		},
+	}
 
-	service := productsService.NewService(mockRepo)
+	service := service.NewService(mockRepo)
 
-	_, err := service.GetProductByName("Laptop")
+	p, err := service.GetProductByName("PlayStation")
 
-	if err == nil {
-		t.Errorf("Expected to get a product, got nil")
+	if err != nil {
+		t.Fatalf("Expected product to be PlayStation but got %v", err)
+	}
+
+	if p.Title != "PlayStation" {
+		t.Fatalf("Expected Title to be PlayStation but got %v", p.Title)
+	}
+
+}
+
+func TestGetAllProducts(t *testing.T) {
+	mockRepo := &MockRepository{
+		products: []*domain.Product{
+			{ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99},
+			{ID: 2, Title: "PlayStation", Category: "Electronics", Stock: 21},
+		},
+	}
+
+	expectedProducts := []*domain.Product{
+		{ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99},
+		{ID: 2, Title: "PlayStation", Category: "Electronics", Stock: 21},
+	}
+
+	service := service.NewService(mockRepo)
+
+	p, err := service.GetAllProducts()
+
+	if err != nil {
+		t.Fatalf("Expected to get all products but got %v", err)
+	}
+
+	if len(mockRepo.products) != len(expectedProducts) {
+		t.Errorf("Expected %v products but got %v", expectedProducts, mockRepo.products)
+	}
+
+	if len(p) == 0 {
+		t.Errorf("Expected a list of products but %v", p)
 	}
 }

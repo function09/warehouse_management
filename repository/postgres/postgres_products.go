@@ -48,3 +48,7 @@ func (r *PostgreSQLRepository) GetProductByName(n string) (*products.Product, er
 	}
 	return &p, nil
 }
+
+func (r *PostgreSQLRepository) GetAllProducts() ([]*products.Product, error) {
+	return []*products.Product
+}

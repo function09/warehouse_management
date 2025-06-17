@@ -10,4 +10,5 @@ type Product struct {
 type Repository interface {
 	GetProductByID(id int) (*Product, error)
 	GetProductByName(n string) (*Product, error)
+	GetAllProducts() ([]*Product, error)
 }

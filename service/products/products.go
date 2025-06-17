@@ -19,3 +19,7 @@ func (s *Service) GetProductByID(id int) (*domain.Product, error) {
 func (s *Service) GetProductByName(n string) (*domain.Product, error) {
 	return s.repo.GetProductByName(n)
 }
+
+func (s *Service) GetAllProducts() ([]*domain.Product, error) {
+	return s.repo.GetAllProducts()
+}
