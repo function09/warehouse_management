@@ -50,5 +50,31 @@ func (r *PostgreSQLRepository) GetProductByName(n string) (*products.Product, er
 }
 
 func (r *PostgreSQLRepository) GetAllProducts() ([]*products.Product, error) {
-	return []*products.Product
+	sqlStatement := "select product_id, product_name, stock FROM products"
+
+	rows, err := r.db.Query(sqlStatement, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var productList []*products.Product
+	for rows.Next() {
+		var p products.Product
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Stock); err != nil {
+			return nil, err
+		}
+
+		productList = append(productList, &p)
+
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return productList, nil
 }

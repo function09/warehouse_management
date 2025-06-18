@@ -80,6 +80,43 @@ func TestGetProductByID(t *testing.T) {
 	}
 }
 
+func TestGetProductByID_RepoError(t *testing.T) {
+	mockRepo := &MockRepository{err: errors.New("Database connection failed")}
+
+	service := service.NewService(mockRepo)
+
+	_, err := service.GetProductByID(1)
+
+	if err == nil {
+		t.Fatal("Expected an error but got nil")
+	}
+
+	if err.Error() != "Database connection failed" {
+		t.Errorf("Expected 'database connection failed' error, got: %v", err)
+	}
+}
+
+func TestGetProductByID_ProductNotFound(t *testing.T) {
+	mockRepo := &MockRepository{
+		products: []*domain.Product{
+			{ID: 1, Title: "Laptop", Category: "Electronics", Stock: 99},
+			{ID: 2, Title: "PlayStation", Category: "Electronics", Stock: 21},
+		},
+	}
+
+	service := service.NewService(mockRepo)
+
+	_, err := service.GetProductByID(3)
+
+	if err == nil {
+		t.Fatal("Expected an error but got nil")
+	}
+
+	if err.Error() != "product not found" {
+		t.Errorf("Expected to not find product, got: %v", err)
+	}
+}
+
 func TestGetProductByName(t *testing.T) {
 	mockRepo := &MockRepository{
 		products: []*domain.Product{
