@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/function09/warehouse_management/api"
+	"github.com/function09/warehouse_management/repository/postgres"
+	service "github.com/function09/warehouse_management/service/products"
 	_ "github.com/lib/pq"
 )
 
