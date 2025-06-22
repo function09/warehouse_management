@@ -8,9 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/function09/warehouse_management/api"
-	"github.com/function09/warehouse_management/repository/postgres"
-	service "github.com/function09/warehouse_management/service/products"
+	"github.com/function09/warehouse_management/internal/product"
 	_ "github.com/lib/pq"
 )
 
@@ -103,18 +101,19 @@ func main() {
 	db := ConnectToDB()
 	defer db.Close()
 
-	// if err := AddCategories(db); err != nil {
-	// 	log.Fatalf("Failed to add categories: %v", err)
-	// }
-	//
-	// if err := AddProducts(db); err != nil {
-	// 	log.Fatalf("Failed to add products: %v", err)
-	// }
-	//
+	repo := product.NewPostgreSQLRepository(db)
+	svc := product.NewService(repo)
+	handler := product.NewProductHandler(svc)
+
+	router := http.NewServeMux()
+
+	router.HandleFunc("/products", handler.GetProductByID)
+
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")
 		port = "8080"
 	}
-	http.ListenAndServe(":"+port, nil)
+
+	http.ListenAndServe(":"+port, router)
 }
