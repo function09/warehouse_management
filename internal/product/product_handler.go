@@ -65,6 +65,7 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	if p == nil {
@@ -83,4 +84,39 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Printf("failed to encode json: %v", err)
 	}
+}
+
+func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	name := params.Get("name")
+
+	if name == "" {
+		sendJSONError(w, "Name cannot be blank", http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.productService.GetProductByName(name)
+
+	if err != nil {
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if p == nil {
+		sendJSONError(w, "Product Not Found", http.StatusNotFound)
+		return
+	}
+
+	data := SuccessMessage{
+		Message: "Successfully fetched product with Name",
+		Code:    http.StatusOK,
+		Data:    p,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("failed to encode json: %v", err)
+	}
+
 }

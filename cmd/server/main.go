@@ -108,7 +108,7 @@ func main() {
 	router := http.NewServeMux()
 
 	router.HandleFunc("/products", handler.GetProductByID)
-
+	router.HandleFunc("/names", handler.GetProductByName)
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")

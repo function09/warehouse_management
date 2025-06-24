@@ -22,11 +22,18 @@ func (s *Service) GetProductByID(id int) (*Product, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return product, nil
 }
 
 func (s *Service) GetProductByName(n string) (*Product, error) {
-	return s.repo.GetProductByName(n)
+	product, err := s.repo.GetProductByName(n)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return product, nil
 }
 
 func (s *Service) GetAllProducts() ([]*Product, error) {
