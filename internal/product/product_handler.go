@@ -21,9 +21,9 @@ type ErrorMessage struct {
 }
 
 type SuccessMessage struct {
-	Message string   `json:"message"`
-	Code    int      `json:"code"`
-	Data    *Product `json:"data"`
+	Message string     `json:"message"`
+	Code    int        `json:"code"`
+	Data    []*Product `json:"data"`
 }
 
 func sendJSONError(w http.ResponseWriter, message string, statusCode int) {
@@ -61,6 +61,8 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	var pList []*Product
+
 	p, err := h.productService.GetProductByID(IDInt)
 
 	if err != nil {
@@ -73,10 +75,12 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	pList = append(pList, p)
+
 	data := SuccessMessage{
 		Message: "Successfully fetched product with ID",
 		Code:    http.StatusOK,
-		Data:    p,
+		Data:    pList,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -95,6 +99,8 @@ func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	var pList []*Product
+
 	p, err := h.productService.GetProductByName(name)
 
 	if err != nil {
@@ -102,8 +108,53 @@ func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if p == nil {
-		sendJSONError(w, "Product Not Found", http.StatusNotFound)
+	pList = append(pList, p)
+
+	data := SuccessMessage{
+		Message: "Successfully fetched product with Name",
+		Code:    http.StatusOK,
+		Data:    pList,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("failed to encode json: %v", err)
+	}
+
+}
+
+func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	limit := params.Get("limit")
+	offset := params.Get("offset")
+
+	limitInt, err := strconv.Atoi(limit)
+
+	if err != nil {
+		log.Printf("Error converting string to int: %v", err)
+	}
+
+	offsetInt, err := strconv.Atoi(offset)
+
+	if err != nil {
+		log.Printf("Error converting string to int: %v", err)
+	}
+
+	if limit == "" {
+		sendJSONError(w, "No limit value specified", http.StatusBadRequest)
+		return
+	}
+
+	if offset == "" {
+		sendJSONError(w, "No offset value specified", http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.productService.GetAllProducts(limitInt, offsetInt)
+
+	if err != nil {
+		sendJSONError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

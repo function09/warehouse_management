@@ -109,6 +109,8 @@ func main() {
 
 	router.HandleFunc("/products", handler.GetProductByID)
 	router.HandleFunc("/names", handler.GetProductByName)
+	router.HandleFunc("/all", handler.GetAllProducts)
+
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")

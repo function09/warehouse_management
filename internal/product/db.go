@@ -48,10 +48,10 @@ func (r *PostgreSQLRepository) GetProductByName(n string) (*Product, error) {
 	return &p, nil
 }
 
-func (r *PostgreSQLRepository) GetAllProducts() ([]*Product, error) {
-	sqlStatement := "select product_id, product_name, stock FROM products"
+func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product, error) {
+	sqlStatement := "SELECT product_id, product_name, stock FROM products ORDER BY product_id LIMIT $1 OFFSET $2"
 
-	rows, err := r.db.Query(sqlStatement, nil)
+	rows, err := r.db.Query(sqlStatement, limit, offset)
 
 	if err != nil {
 		return nil, err
@@ -60,6 +60,7 @@ func (r *PostgreSQLRepository) GetAllProducts() ([]*Product, error) {
 	defer rows.Close()
 
 	var productList []*Product
+
 	for rows.Next() {
 		var p Product
 
