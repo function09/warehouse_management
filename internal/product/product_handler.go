@@ -99,7 +99,7 @@ func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var pList []*Product
+	// var pList []*Product
 
 	p, err := h.productService.GetProductByName(name)
 
@@ -108,12 +108,12 @@ func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	pList = append(pList, p)
+	// pList = append(pList, p)
 
 	data := SuccessMessage{
-		Message: "Successfully fetched product with Name",
+		Message: "Successfully fetched product by name",
 		Code:    http.StatusOK,
-		Data:    pList,
+		Data:    p,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

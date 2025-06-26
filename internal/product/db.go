@@ -30,22 +30,35 @@ func (r *PostgreSQLRepository) GetProductByID(id int) (*Product, error) {
 	return &p, nil
 }
 
-func (r *PostgreSQLRepository) GetProductByName(n string) (*Product, error) {
-	sqlStatement := "SELECT * FROM products WHERE product_name=$1"
+func (r *PostgreSQLRepository) GetProductByName(n string) ([]*Product, error) {
+	sqlStatement := "SELECT product_id, product_name, stock FROM products WHERE product_name ILIKE $1"
 
-	row := r.db.QueryRow(sqlStatement, n)
+	query := "%" + n + "%"
 
-	var p Product
-
-	err := row.Scan(&p.ID, &p.Category, &p.Title, &p.Stock)
+	rows, err := r.db.Query(sqlStatement, query)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
 		return nil, err
 	}
-	return &p, nil
+
+	defer rows.Close()
+
+	var productList []*Product
+
+	for rows.Next() {
+		p := &Product{}
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Stock); err != nil {
+			return nil, err
+		}
+
+		productList = append(productList, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return productList, nil
 }
 
 func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product, error) {

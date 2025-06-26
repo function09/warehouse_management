@@ -26,7 +26,7 @@ func (s *Service) GetProductByID(id int) (*Product, error) {
 	return product, nil
 }
 
-func (s *Service) GetProductByName(n string) (*Product, error) {
+func (s *Service) GetProductByName(n string) ([]*Product, error) {
 	product, err := s.repo.GetProductByName(n)
 
 	if err != nil {
