@@ -36,6 +36,16 @@ func (s *Service) GetProductByName(n string) ([]*Product, error) {
 	return product, nil
 }
 
+func (s *Service) GetProductsByCategory(c string) ([]*Product, error) {
+	products, err := s.repo.GetProductsByCategory(c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (s *Service) GetAllProducts(limit int, offset int) ([]*Product, error) {
 	if limit < 0 || offset < 0 {
 		return nil, errors.New("Error: Limit and offset cannot be less than 0")

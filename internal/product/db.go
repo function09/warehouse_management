@@ -61,6 +61,36 @@ func (r *PostgreSQLRepository) GetProductByName(n string) ([]*Product, error) {
 	return productList, nil
 }
 
+func (r *PostgreSQLRepository) GetProductsByCategory(c string) ([]*Product, error) {
+	sqlStatement := "SELECT p.product_id, p.product_name, p.stock, c.category_name FROM products as p INNER JOIN categories as c ON p.category_id = c.category_id WHERE c.category_name = $1;"
+
+	rows, err := r.db.Query(sqlStatement, c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var products []*Product
+
+	for rows.Next() {
+		p := &Product{}
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Stock, &p.Category); err != nil {
+			return nil, err
+		}
+
+		products = append(products, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product, error) {
 	sqlStatement := "SELECT product_id, product_name, stock FROM products ORDER BY product_id LIMIT $1 OFFSET $2"
 

@@ -35,6 +35,7 @@ func sendJSONError(w http.ResponseWriter, message string, statusCode int) {
 		Code:    statusCode,
 	}
 
+	// Create a function to handle this altogether
 	if err := json.NewEncoder(w).Encode(errResp); err != nil {
 		log.Printf("failed to encode json: %v", err)
 	}
@@ -122,6 +123,35 @@ func (h *ProductHandler) GetProductByName(w http.ResponseWriter, r *http.Request
 		log.Printf("failed to encode json: %v", err)
 	}
 
+}
+
+func (h *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	cat := params.Get("category")
+
+	if cat == "" {
+		sendJSONError(w, "Error: category cannot be null", http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.productService.GetProductsByCategory(cat)
+
+	if err != nil {
+		sendJSONError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := SuccessMessage{
+		Message: "Succesfully fetched products by category",
+		Code:    200,
+		Data:    p,
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("failed to encode json: %v", err)
+	}
 }
 
 func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) {
