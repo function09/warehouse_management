@@ -2,6 +2,7 @@ package product
 
 import (
 	"errors"
+	"fmt"
 )
 
 type Service struct {
@@ -58,4 +59,19 @@ func (s *Service) GetAllProducts(limit int, offset int) ([]*Product, error) {
 	}
 
 	return products, nil
+}
+
+func (s *Service) AddNewProduct(name string, stock int) (int64, error) {
+
+	if stock < 0 {
+		return 0, fmt.Errorf("Error: stock cannot be less than 0")
+	}
+
+	if name == "" {
+		return 0, fmt.Errorf("Error: name cannot be blank")
+
+	}
+
+	return s.repo.AddNewProduct(name, stock)
+
 }

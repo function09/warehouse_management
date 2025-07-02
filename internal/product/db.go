@@ -20,7 +20,7 @@ func (r *PostgreSQLRepository) GetProductByID(id int) (*Product, error) {
 
 	var p Product
 
-	err := row.Scan(&p.ID, &p.Category, &p.Title, &p.Stock)
+	err := row.Scan(&p.ID, &p.Category, &p.Name, &p.Stock)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("product with id %d not found", id)
@@ -48,7 +48,7 @@ func (r *PostgreSQLRepository) GetProductByName(n string) ([]*Product, error) {
 	for rows.Next() {
 		p := &Product{}
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Stock); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
 			return nil, err
 		}
 
@@ -77,7 +77,7 @@ func (r *PostgreSQLRepository) GetProductsByCategory(c string) ([]*Product, erro
 	for rows.Next() {
 		p := &Product{}
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Stock, &p.Category); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Stock, &p.Category); err != nil {
 			return nil, err
 		}
 
@@ -107,7 +107,7 @@ func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product
 	for rows.Next() {
 		var p Product
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Stock); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Stock); err != nil {
 			return nil, err
 		}
 
@@ -120,4 +120,17 @@ func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product
 	}
 
 	return productList, nil
+}
+
+func (r *PostgreSQLRepository) AddNewProduct(name string, stock int) (int64, error) {
+	sqlStatement := "INSERT INTO products (product_name, stock) VALUES ($1, $2) RETURNING product_id"
+
+	var id int64
+	err := r.db.QueryRow(sqlStatement, name, stock).Scan(&id)
+
+	if err != nil {
+		return 0, fmt.Errorf("Error inserting products: %v", err)
+	}
+
+	return id, nil
 }

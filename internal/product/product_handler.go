@@ -201,3 +201,29 @@ func (h *ProductHandler) GetAllProducts(w http.ResponseWriter, r *http.Request) 
 	}
 
 }
+
+func (h *ProductHandler) AddNewProduct(w http.ResponseWriter, r *http.Request) {
+	var newProduct Product
+
+	err := json.NewDecoder(r.Body).Decode(&newProduct)
+
+	if err != nil {
+		sendJSONError(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	id, err := h.productService.AddNewProduct(newProduct.Name, newProduct.Stock)
+
+	if err != nil {
+		log.Printf("AddNewProduct error: %v\n", err)
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Product addedd successfully",
+		"id":      id,
+	})
+}
