@@ -112,6 +112,7 @@ func main() {
 	router.HandleFunc("/all", handler.GetAllProducts)
 	router.HandleFunc("/cat", handler.GetProductsByCategory)
 	router.HandleFunc("/add", handler.AddNewProduct)
+	router.HandleFunc("/update", handler.UpdateProduct)
 
 	port := os.Getenv("APP_PORT")
 	if port == "" {

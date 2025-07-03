@@ -12,5 +12,6 @@ type Repository interface {
 	GetProductByName(n string) ([]*Product, error)
 	GetProductsByCategory(n string) ([]*Product, error)
 	GetAllProducts(limit int, offset int) ([]*Product, error)
-	AddNewProduct(name string, stock int) (int64, error)
+	AddNewProduct(name string, stock int, category string) (int64, error)
+	UpdateProduct(id int, name string, stock int, category string) (string, error)
 }

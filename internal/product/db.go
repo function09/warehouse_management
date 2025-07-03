@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 )
 
 type PostgreSQLRepository struct {
@@ -122,15 +123,35 @@ func (r *PostgreSQLRepository) GetAllProducts(limit int, offset int) ([]*Product
 	return productList, nil
 }
 
-func (r *PostgreSQLRepository) AddNewProduct(name string, stock int) (int64, error) {
-	sqlStatement := "INSERT INTO products (product_name, stock) VALUES ($1, $2) RETURNING product_id"
+func (r *PostgreSQLRepository) AddNewProduct(name string, stock int, category string) (int64, error) {
+	// Must be modified to not allow duplicate entries
+	sqlStatement := "INSERT INTO products (product_name, stock, category_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3)) RETURNING product_id"
 
 	var id int64
-	err := r.db.QueryRow(sqlStatement, name, stock).Scan(&id)
+	err := r.db.QueryRow(sqlStatement, name, stock, category).Scan(&id)
 
 	if err != nil {
 		return 0, fmt.Errorf("Error inserting products: %v", err)
 	}
 
 	return id, nil
+}
+
+func (r *PostgreSQLRepository) UpdateProduct(id int, name string, stock int, category string) (string, error) {
+	sqlStatement := "UPDATE products SET product_name = $1, stock = $2, category_id = (SELECT category_id from categories WHERE category_name = $3) WHERE product_id = $4"
+
+	result, err := r.db.Exec(sqlStatement, name, stock, category, id)
+
+	if err != nil {
+		return "", fmt.Errorf("Error updating products: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("No product found with ID %d to update", id)
+	}
+
+	return "Product " + strconv.Itoa(id) + " successfully updated", nil
+
 }
