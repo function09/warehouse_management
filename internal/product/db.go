@@ -155,3 +155,22 @@ func (r *PostgreSQLRepository) UpdateProduct(id int, name string, stock int, cat
 	return "Product " + strconv.Itoa(id) + " successfully updated", nil
 
 }
+
+func (r *PostgreSQLRepository) DeleteProduct(id int) (string, error) {
+	sqlStatement := "DELETE FROM products WHERE product_id = $1"
+
+	result, err := r.db.Exec(sqlStatement, id)
+
+	if err != nil {
+		return "", fmt.Errorf("Error deleting products: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("No product found with ID %d to delete", id)
+	}
+
+	return "Successfully deleted product", nil
+
+}

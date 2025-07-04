@@ -83,3 +83,12 @@ func (s *Service) UpdateProduct(id int, name string, stock int, category string)
 
 	return s.repo.UpdateProduct(id, name, stock, category)
 }
+
+func (s *Service) DeleteProduct(id int) (string, error) {
+
+	if id < 0 {
+		return "", fmt.Errorf("Error: ID cannot be less than 0")
+	}
+
+	return s.repo.DeleteProduct(id)
+}

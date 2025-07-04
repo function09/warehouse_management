@@ -14,4 +14,5 @@ type Repository interface {
 	GetAllProducts(limit int, offset int) ([]*Product, error)
 	AddNewProduct(name string, stock int, category string) (int64, error)
 	UpdateProduct(id int, name string, stock int, category string) (string, error)
+	DeleteProduct(id int) (string, error)
 }

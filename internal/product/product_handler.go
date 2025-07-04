@@ -222,7 +222,7 @@ func (h *ProductHandler) AddNewProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"message": "Product added successfully",
 		"id":      id,
 	})
@@ -247,9 +247,34 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"message": message,
 		"id":      oldProduct.ID,
 	})
 
+}
+
+func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
+	var removedProduct *Product
+	err := json.NewDecoder(r.Body).Decode(&removedProduct)
+
+	if err != nil {
+		sendJSONError(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	message, err := h.productService.DeleteProduct(removedProduct.ID)
+
+	if err != nil {
+		log.Printf("Error deleting product: %v", err)
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{
+		"message": message,
+		"id":      removedProduct.ID,
+	})
 }
