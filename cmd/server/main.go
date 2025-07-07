@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/function09/warehouse_management/internal/category"
 	"github.com/function09/warehouse_management/internal/product"
 	_ "github.com/lib/pq"
 )
@@ -105,6 +106,10 @@ func main() {
 	svc := product.NewService(repo)
 	handler := product.NewProductHandler(svc)
 
+	catRepo := category.NewPostGreSQLRepository(db)
+	catSvc := category.NewService(catRepo)
+	catHandler := category.NewCategoryHandler(catSvc)
+
 	router := http.NewServeMux()
 
 	router.HandleFunc("/products", handler.GetProductByID)
@@ -114,6 +119,7 @@ func main() {
 	router.HandleFunc("/add", handler.AddNewProduct)
 	router.HandleFunc("/update", handler.UpdateProduct)
 	router.HandleFunc("/delete", handler.DeleteProduct)
+	router.HandleFunc("/categories", catHandler.GetCategoryByName)
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")
