@@ -44,3 +44,16 @@ func (r *PostGreSQLRepository) GetCategoryByID(id int) (*Category, error) {
 
 	return &category, nil
 }
+
+func (r *PostGreSQLRepository) AddNewCategory(n string) (int64, error) {
+	sqlStatement := "INSERT INTO categories (category_name) VALUES ($1) RETURNING category_id"
+
+	var id int64
+	err := r.db.QueryRow(sqlStatement, n).Scan(&id)
+
+	if err != nil {
+		return 0, fmt.Errorf("Error inserting new row: %v", err)
+	}
+
+	return id, nil
+}

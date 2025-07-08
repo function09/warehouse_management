@@ -21,5 +21,17 @@ func (s *Service) GetCategoryByName(n string) (*Category, error) {
 }
 
 func (s *Service) GetCategoryByID(id int) (*Category, error) {
+	if id < 0 {
+		return nil, fmt.Errorf("Category ID cannot be less than 0")
+	}
+
 	return s.repo.GetCategoryByID(id)
+}
+
+func (s *Service) AddNewCategory(n string) (int64, error) {
+	if n == "" {
+		return 0, fmt.Errorf("category name cannot be blank")
+	}
+
+	return s.repo.AddNewCategory(n)
 }

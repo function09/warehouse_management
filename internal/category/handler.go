@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct {
@@ -48,22 +49,76 @@ func (h *Handler) GetCategoryByName(w http.ResponseWriter, r *http.Request) {
 		sendJSONError(w, "Category cannot be blank", http.StatusBadRequest)
 	}
 
-	var result []*Category
-
 	cat, err := h.categoryService.GetCategoryByName(category)
 
 	if err != nil {
 		log.Printf("GetCategoryByName error: %v", err)
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
-
-	result = append(result, cat)
 
 	data := SuccessMessage{
 		Message: "Successfully fetched category",
 		Code:    http.StatusOK,
-		Data:    result,
+		Data:    []*Category{cat},
 	}
 
 	w.Header().Set("Content-type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func (h *Handler) GetCategoryByID(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+
+	id, err := strconv.Atoi(params.Get("id"))
+
+	if err != nil {
+		log.Printf("Failed to convert id to int: %v", err)
+	}
+
+	cat, err := h.categoryService.GetCategoryByID(id)
+
+	if err != nil {
+		log.Printf("GetCategoryByID error: %v", err)
+		sendJSONError(w, "Unexpected server error", http.StatusInternalServerError)
+		return
+	}
+
+	data := SuccessMessage{
+		Message: "Successfully retrieved data by ID",
+		Code:    http.StatusOK,
+		Data:    []*Category{cat},
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("failed to encode json: %v", err)
+	}
+
+}
+
+func (h *Handler) AddNewCategory(w http.ResponseWriter, r *http.Request) {
+	var newCat string
+	err := json.NewDecoder(r.Body).Decode(&newCat)
+
+	if err != nil {
+		log.Printf("Error decoding body: %v", err)
+
+	}
+
+	id, err := h.categoryService.AddNewCategory(newCat)
+
+	if err != nil {
+		log.Printf("AddNewCategoryError: %v", err)
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully created new category", "code": http.StatusCreated, "name": newCat, "id": id}); err != nil {
+		log.Printf("failed to encode json: %v", err)
+	}
+
 }
