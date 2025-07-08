@@ -30,5 +30,17 @@ func (r *PostGreSQLRepository) GetCategoryByName(n string) (*Category, error) {
 }
 
 func (r *PostGreSQLRepository) GetCategoryByID(id int) (*Category, error) {
-	return &Category{}, nil
+	sqlStatement := "SELECT category_id, category_name FROM categories WHERE category_id = $1"
+
+	row := r.db.QueryRow(sqlStatement, id)
+
+	var category Category
+
+	err := row.Scan(&category.CategoryID, &category.CategoryName)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error querying category: %v", err)
+	}
+
+	return &category, nil
 }
