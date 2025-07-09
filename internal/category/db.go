@@ -57,3 +57,21 @@ func (r *PostGreSQLRepository) AddNewCategory(n string) (int64, error) {
 
 	return id, nil
 }
+
+func (r *PostGreSQLRepository) UpdateCategory(n string, id int) (int64, error) {
+	sqlStatment := "UPDATE categories SET category_name=$1 WHERE category_id=$2 RETURNING category_id"
+
+	var cat Category
+
+	err := r.db.QueryRow(sqlStatment, n, id).Scan(&cat.CategoryName, &cat.CategoryID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, fmt.Errorf("Category with ID %d not found: %w", id, err)
+		} else {
+			return 0, fmt.Errorf("Error querying category: %w", err)
+		}
+	}
+
+	return int64(cat.CategoryID), nil
+}

@@ -1,7 +1,10 @@
 package category
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -120,5 +123,36 @@ func (h *Handler) AddNewCategory(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully created new category", "code": http.StatusCreated, "name": newCat, "id": id}); err != nil {
 		log.Printf("failed to encode json: %v", err)
 	}
+}
 
+func (h *Handler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
+	var cat *Category
+
+	err := json.NewDecoder(r.Body).Decode(&cat)
+
+	if err != nil {
+		log.Printf("Error decoding body: %v", err)
+		return
+	}
+
+	id, err := h.categoryService.UpdateCategory(cat.CategoryName, cat.CategoryID)
+
+	if err != nil {
+
+		if errors.Is(err, sql.ErrNoRows) {
+			sendJSONError(w, "Category not found", http.StatusBadRequest)
+			log.Printf("No rows were found with the specified category")
+			return
+		} else {
+			log.Printf("UpdateCategory error: %v", err)
+			sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully updated category", "code": http.StatusOK, "newCat": cat.CategoryName, "id": id}); err != nil {
+		fmt.Printf("failed to encode json: %v", err)
+	}
 }

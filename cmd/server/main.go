@@ -122,6 +122,7 @@ func main() {
 	router.HandleFunc("/categories", catHandler.GetCategoryByName)
 	router.HandleFunc("/category", catHandler.GetCategoryByID)
 	router.HandleFunc("/cats", catHandler.AddNewCategory)
+	router.HandleFunc("/up", catHandler.UpdateCategory)
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")

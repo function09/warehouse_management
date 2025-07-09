@@ -9,6 +9,6 @@ type Repository interface {
 	GetCategoryByName(n string) (*Category, error)
 	GetCategoryByID(id int) (*Category, error)
 	AddNewCategory(n string) (int64, error)
-	// UpdateCategory(id int) (int64, error)
+	UpdateCategory(n string, id int) (int64, error)
 	// DeleteCategory(id int) (int64, error)
 }

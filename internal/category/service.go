@@ -35,3 +35,11 @@ func (s *Service) AddNewCategory(n string) (int64, error) {
 
 	return s.repo.AddNewCategory(n)
 }
+
+func (s *Service) UpdateCategory(n string, id int) (int64, error) {
+	if n == "" {
+		return 0, fmt.Errorf("category name cannot be blank")
+	}
+
+	return s.repo.UpdateCategory(n, id)
+}
