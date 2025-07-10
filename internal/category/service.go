@@ -43,3 +43,11 @@ func (s *Service) UpdateCategory(n string, id int) (int64, error) {
 
 	return s.repo.UpdateCategory(n, id)
 }
+
+// func (s *Service) DeleteCategory(id int) (int64, error) {
+// 	if id < 0 {
+// 		return 0, fmt.Errorf("category ID cannot be less than 0")
+// 	}
+//
+// 	return s.repo.DeleteCategory(id)
+// }

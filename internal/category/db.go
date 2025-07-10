@@ -75,3 +75,21 @@ func (r *PostGreSQLRepository) UpdateCategory(n string, id int) (int64, error) {
 
 	return int64(cat.CategoryID), nil
 }
+
+func (r *PostGreSQLRepository) DeleteCategory(id int) (int64, error) {
+	sqlStatement := "DELETE FROM categories WHERE category_id = $1 RETURNING category_id"
+
+	var catID int64
+
+	err := r.db.QueryRow(sqlStatement, id).Scan(&catID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, fmt.Errorf("Category with ID %d not found: %w", catID, err)
+		} else {
+			return 0, fmt.Errorf("Error querying category: %w", err)
+		}
+	}
+
+	return catID, nil
+}

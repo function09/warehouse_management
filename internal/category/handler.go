@@ -156,3 +156,34 @@ func (h *Handler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("failed to encode json: %v", err)
 	}
 }
+
+// func (h *Handler) DeleteCategory(w http.ResponseWriter, r *http.Request) {
+// 	var cat Category
+//
+// 	err := json.NewDecoder(r.Body).Decode(&cat)
+//
+// 	if err != nil {
+// 		log.Printf("Error decoding body: %v", err)
+// 		return
+// 	}
+//
+// 	id, err := h.categoryService.DeleteCategory(cat.CategoryID)
+//
+// 	if err != nil {
+// 		if errors.Is(err, sql.ErrNoRows) {
+// 			log.Printf("Now rows were found with this specified id")
+// 			sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+// 			return
+// 		} else {
+// 			log.Printf("DeleteCategory error: %v", err)
+// 			sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+// 			return
+// 		}
+// 	}
+//
+// 	w.Header().Set("Content-type", "application/json")
+//
+// 	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully deleted category", "code": http.StatusOK, "category": id}); err != nil {
+// 		log.Printf("Failed to encode JSON: %v", err)
+// 	}
+// }
