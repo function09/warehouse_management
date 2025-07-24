@@ -10,6 +10,7 @@ import (
 
 	"github.com/function09/warehouse_management/internal/category"
 	"github.com/function09/warehouse_management/internal/product"
+	"github.com/function09/warehouse_management/internal/shipment"
 	_ "github.com/lib/pq"
 )
 
@@ -110,6 +111,10 @@ func main() {
 	catSvc := category.NewService(catRepo)
 	catHandler := category.NewCategoryHandler(catSvc)
 
+	shipRepo := shipment.NewPostgresSQLRepository(db)
+	shipSvc := shipment.NewService(shipRepo)
+	shipHandler := shipment.NewShipmentHandler(shipSvc)
+
 	router := http.NewServeMux()
 
 	router.HandleFunc("/products", handler.GetProductByID)
@@ -123,6 +128,7 @@ func main() {
 	router.HandleFunc("/category", catHandler.GetCategoryByID)
 	router.HandleFunc("/cats", catHandler.AddNewCategory)
 	router.HandleFunc("/up", catHandler.UpdateCategory)
+	router.HandleFunc("/shipments", shipHandler.GetShipments)
 	// router.HandleFunc("/del", catHandler.DeleteCategory)
 	port := os.Getenv("APP_PORT")
 	if port == "" {
