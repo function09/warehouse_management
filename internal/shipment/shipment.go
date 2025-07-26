@@ -14,5 +14,5 @@ type Shipment struct {
 }
 
 type Repository interface {
-	GetShipments() ([]*Shipment, error)
+	GetShipments(l int, o int) ([]*Shipment, error)
 }

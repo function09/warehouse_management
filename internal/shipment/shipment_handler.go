@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ShipmentHandler struct {
@@ -41,8 +42,37 @@ func sendJSONError(w http.ResponseWriter, message string, statusCode int) {
 }
 
 func (s *ShipmentHandler) GetShipments(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	limit := params.Get("limit")
+	offset := params.Get("offset")
 
-	shipments, err := s.ShipmentService.GetShipments()
+	if limit == "" {
+		sendJSONError(w, "No limit value specified", http.StatusBadRequest)
+		return
+	}
+
+	if offset == "" {
+		sendJSONError(w, "No offset value specified", http.StatusBadRequest)
+		return
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+
+	if err != nil {
+		log.Printf("Error converting string to int: %v", err)
+		sendJSONError(w, "Invalid 'limit' parameter", http.StatusBadRequest)
+		return
+	}
+
+	offsetInt, err := strconv.Atoi(offset)
+
+	if err != nil {
+		log.Printf("Error converting string to int: %v", err)
+		sendJSONError(w, "Invalid 'offset' parameter", http.StatusBadRequest)
+		return
+	}
+
+	shipments, err := s.ShipmentService.GetShipments(limitInt, offsetInt)
 
 	if err != nil {
 		log.Printf("GetShipments error: %v", err)
@@ -51,7 +81,7 @@ func (s *ShipmentHandler) GetShipments(w http.ResponseWriter, r *http.Request) {
 	}
 
 	message := SuccessMessage{
-		Message: "Succesfully retrieved all shipments",
+		Message: "Successfully retrieved all shipments",
 		Status:  http.StatusOK,
 		Data:    shipments,
 	}

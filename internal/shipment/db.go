@@ -10,10 +10,10 @@ func NewPostgresSQLRepository(db *sql.DB) Repository {
 	return &PostgreSQLRepository{db: db}
 }
 
-func (r *PostgreSQLRepository) GetShipments() ([]*Shipment, error) {
-	sqlStatement := "SELECT id, po_number, status, expected_delivery, date_delivered, pallet_qty, received_pallet_qty, supplier_id FROM shipments "
+func (r *PostgreSQLRepository) GetShipments(l int, o int) ([]*Shipment, error) {
+	sqlStatement := "SELECT id, po_number, status, expected_delivery, date_delivered, pallet_qty, received_pallet_qty, supplier_id FROM shipments ORDER BY id LIMIT $1 OFFSET $2"
 
-	rows, err := r.db.Query(sqlStatement)
+	rows, err := r.db.Query(sqlStatement, l, o)
 
 	if err != nil {
 		return nil, err
