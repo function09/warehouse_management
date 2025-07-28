@@ -15,4 +15,5 @@ type Shipment struct {
 
 type Repository interface {
 	GetShipments(l int, o int) ([]*Shipment, error)
+	UpdateShipments(dd string, rq int, id int) (string, error)
 }

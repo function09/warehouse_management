@@ -1,6 +1,10 @@
 package shipment
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strconv"
+)
 
 type PostgreSQLRepository struct {
 	db *sql.DB
@@ -16,7 +20,7 @@ func (r *PostgreSQLRepository) GetShipments(l int, o int) ([]*Shipment, error) {
 	rows, err := r.db.Query(sqlStatement, l, o)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error querying shipments: %v", err)
 	}
 
 	defer rows.Close()
@@ -34,8 +38,30 @@ func (r *PostgreSQLRepository) GetShipments(l int, o int) ([]*Shipment, error) {
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("No rows found: %v", err)
 	}
 
 	return shipments, nil
+}
+
+func (r *PostgreSQLRepository) UpdateShipments(dd string, rq int, id int) (string, error) {
+	sqlStatement := "UPDATE shipments SET date_delivered=$1, received_pallet_qty=$2 WHERE id=$3"
+
+	result, err := r.db.Exec(sqlStatement, dd, rq, id)
+
+	if err != nil {
+		return "", fmt.Errorf("Error updating shipments %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return "", fmt.Errorf("error checking affected rows: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("No shipment found with ID %d to update", id)
+	}
+
+	return fmt.Sprintf("Succesfully updated shipment ID: " + strconv.Itoa(id)), nil
 }
