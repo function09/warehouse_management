@@ -129,7 +129,9 @@ func main() {
 	router.HandleFunc("/cats", catHandler.AddNewCategory)
 	router.HandleFunc("/up", catHandler.UpdateCategory)
 	router.HandleFunc("/shipments", shipHandler.GetShipments)
+	router.HandleFunc("/upship", shipHandler.UpdateShipments)
 	// router.HandleFunc("/del", catHandler.DeleteCategory)
+
 	port := os.Getenv("APP_PORT")
 	if port == "" {
 		log.Fatal("APP_PORT not assigned")

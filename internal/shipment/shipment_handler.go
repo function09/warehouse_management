@@ -92,3 +92,32 @@ func (s *ShipmentHandler) GetShipments(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to encode json: %v", err)
 	}
 }
+
+func (s *ShipmentHandler) UpdateShipments(w http.ResponseWriter, r *http.Request) {
+	var shipment *Shipment
+
+	err := json.NewDecoder(r.Body).Decode(&shipment)
+
+	if err != nil {
+		log.Printf("Failed to decode JSON data: %v", err)
+	}
+
+	defer r.Body.Close()
+
+	data, err := s.ShipmentService.repo.UpdateShipments(shipment.Date_delivered.String(), *shipment.Received_pallet_qty, shipment.ID)
+
+	if err != nil {
+		log.Printf("UpdateShipments error: %v", err)
+		sendJSONError(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(map[string]any{"message": "Successfully updated shipments",
+		"status": http.StatusOK,
+		"data":   data}); err != nil {
+		log.Printf("Failed to encode json: %v", err)
+	}
+
+}

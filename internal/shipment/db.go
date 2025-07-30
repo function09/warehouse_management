@@ -45,7 +45,7 @@ func (r *PostgreSQLRepository) GetShipments(l int, o int) ([]*Shipment, error) {
 }
 
 func (r *PostgreSQLRepository) UpdateShipments(dd string, rq int, id int) (string, error) {
-	sqlStatement := "UPDATE shipments SET date_delivered=$1, received_pallet_qty=$2 WHERE id=$3"
+	sqlStatement := "UPDATE inbound_shipments SET date_delivered=$1, received_pallet_qty=$2 WHERE id=$3"
 
 	result, err := r.db.Exec(sqlStatement, dd, rq, id)
 
